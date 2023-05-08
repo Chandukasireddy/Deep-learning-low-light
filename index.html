@@ -1,59 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Deep Learning Low Light Image Project Interface</title>
+	<title>Low Light Biopsy Image Enhancement</title>
 	<style>
 		body {
-			background-color: #f0f0f0;
 			font-family: Arial, sans-serif;
 		}
 		h1 {
-			color: #3d3d3d;
 			text-align: center;
 		}
 		.container {
-			max-width: 800px;
-			margin: 0 auto;
-			padding: 20px;
-			background-color: #fff;
-			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-		}
-		form {
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			margin-top: 20px;
+			margin-top: 50px;
 		}
-		label {
-			font-weight: bold;
-			margin-bottom: 10px;
-		}
-		input[type="file"] {
+		#original-img {
+			max-width: 100%;
 			margin-bottom: 20px;
 		}
-		input[type="submit"] {
-			background-color: #4CAF50;
-			color: #fff;
-			padding: 10px 20px;
-			border: none;
-			border-radius: 4px;
-			cursor: pointer;
-			font-size: 16px;
-			transition: background-color 0.3s;
-		}
-		input[type="submit"]:hover {
-			background-color: #3e8e41;
+		#enhanced-img {
+			max-width: 100%;
 		}
 	</style>
 </head>
 <body>
+	<h1>Low Light Biopsy Image Enhancement</h1>
 	<div class="container">
-		<h1>Deep Learning Low Light Image Project Interface</h1>
-		<form action="#" method="post" enctype="multipart/form-data">
-			<label for="image">Choose an image:</label>
-			<input type="file" id="image" name="image" accept="image/*" required>
-			<input type="submit" value="Process Image">
+		<form>
+			<input type="file" id="file-input" accept="image/*">
+			<button type="submit" onclick="processImage()">Process Image</button>
 		</form>
+		<div>
+			<img id="original-img">
+			<img id="enhanced-img">
+		</div>
 	</div>
+
+	<script>
+		function processImage() {
+			let input = document.getElementById('file-input');
+			if (input.files && input.files[0]) {
+				let file = input.files[0];
+				let reader = new FileReader();
+				reader.onload = function(event) {
+					let img = new Image();
+					img.onload = function() {
+						let canvas = document.createElement('canvas');
+						canvas.width = img.width;
+						canvas.height = img.height;
+						let ctx = canvas.getContext('2d');
+						ctx.drawImage(img, 0, 0);
+						let dataUrl = canvas.toDataURL();
+						let xhr = new XMLHttpRequest();
+						xhr.open('POST', '/process-image');
+						xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+						xhr.onload = function() {
+							let data = JSON.parse(xhr.responseText);
+							let originalImg = document.getElementById('original-img');
+							let enhancedImg = document.getElementById('enhanced-img');
+							originalImg.src = data['original'];
+							enhancedImg.src = data['enhanced'];
+						};
+						xhr.send(JSON.stringify({'dataUrl': dataUrl}));
+					};
+					img.src = event.target.result;
+				};
+				reader.readAsDataURL(file);
+			}
+		}
+	</script>
 </body>
 </html>
