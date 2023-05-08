@@ -54,7 +54,6 @@
 						let dataUrl = canvas.toDataURL();
 						let xhr = new XMLHttpRequest();
 						xhr.open('POST', '/process-image');
-						xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
 						xhr.onload = function() {
 							let data = JSON.parse(xhr.responseText);
 							let originalImg = document.getElementById('original-img');
@@ -62,7 +61,9 @@
 							originalImg.src = data['original'];
 							enhancedImg.src = data['enhanced'];
 						};
-						xhr.send(JSON.stringify({'dataUrl': dataUrl}));
+						let formData = new FormData();
+						formData.append('image', file);
+						xhr.send(formData);
 					};
 					img.src = event.target.result;
 				};
